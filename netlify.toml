@@ -9,6 +9,12 @@
   status = 200
   force = false
 
+# Headers for MediaPipe CDN access
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; connect-src 'self' https://cdn.jsdelivr.net https://*.googleapis.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:;"
+
 [build.environment]
   NODE_VERSION = "18"
 

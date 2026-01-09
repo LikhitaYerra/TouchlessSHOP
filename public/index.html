@@ -8,26 +8,37 @@
       name="description"
       content="TouchlessShop - Multimodal Voice & Gesture-Based E-Commerce Interface"
     />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; connect-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: https:; style-src 'self' 'unsafe-inline';">
     <title>TouchlessShop - Voice & Gesture Shopping</title>
     <!-- MediaPipe Hands - Using stable version with proper model loading -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1640029074/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils@0.6.1629159509/control_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1620248257/drawing_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1640029074/camera_utils.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils@0.6.1629159509/control_utils.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1620248257/drawing_utils.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous" defer></script>
     <script>
       // Pre-initialize MediaPipe Hands to avoid multiple instances
       window.mediaPipeHandsReady = false;
       window.mediaPipeHandsInstance = null;
       
+      function checkMediaPipeLoaded() {
+        if (typeof window.Hands !== 'undefined') {
+          window.mediaPipeHandsReady = true;
+          console.log('✅ MediaPipe Hands script loaded');
+        } else {
+          // Retry if not loaded yet
+          setTimeout(checkMediaPipeLoaded, 500);
+        }
+      }
+      
       window.addEventListener('load', function() {
-        // Wait a bit for scripts to fully load
-        setTimeout(() => {
-          if (typeof window.Hands !== 'undefined') {
-            window.mediaPipeHandsReady = true;
-            console.log('✅ MediaPipe Hands script loaded');
-          }
-        }, 1000);
+        // Start checking after a short delay
+        setTimeout(checkMediaPipeLoaded, 1000);
       });
+      
+      // Also check immediately in case load event already fired
+      if (document.readyState === 'complete') {
+        setTimeout(checkMediaPipeLoaded, 1000);
+      }
     </script>
     <script>
       // Verify MediaPipe is loading

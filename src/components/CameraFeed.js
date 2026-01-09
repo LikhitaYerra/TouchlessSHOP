@@ -24,15 +24,24 @@ const CameraFeed = ({ onGestureDetected }) => {
 
   // Initialize MediaPipe Hands directly (like Python OpenCV approach)
   const initializeHandDetector = useCallback(async () => {
-    // Wait for MediaPipe Hands to be ready
+    // Wait for MediaPipe Hands to be ready - increased retries for slower connections
     let retries = 0;
-    while (retries < 30 && (typeof window.Hands === 'undefined' || !window.mediaPipeHandsReady)) {
+    const maxRetries = 100; // Increased from 30 to 100 (10 seconds total)
+    
+    while (retries < maxRetries && (typeof window.Hands === 'undefined' || !window.mediaPipeHandsReady)) {
       await new Promise(resolve => setTimeout(resolve, 100));
       retries++;
+      
+      // Log progress every 20 retries
+      if (retries % 20 === 0) {
+        console.log(`Waiting for MediaPipe Hands... (${retries}/${maxRetries})`);
+      }
     }
 
     if (typeof window.Hands === 'undefined') {
-      throw new Error('MediaPipe Hands not loaded. Please wait for scripts to load.');
+      console.error('MediaPipe Hands failed to load. Check browser console for errors.');
+      console.error('Make sure you are using HTTPS and scripts are not blocked.');
+      throw new Error('MediaPipe Hands not loaded. Please refresh the page and ensure you are using HTTPS.');
     }
 
     console.log('Creating MediaPipe Hands detector...');
