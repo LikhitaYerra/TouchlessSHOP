@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TouchlessShop - Voice Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .voice-controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .status {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            min-height: 50px;
+        }
+        .command-list {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .command-list h3 {
+            margin-top: 0;
+        }
+        .command-list ul {
+            list-style: none;
+            padding: 0;
+        }
+        .command-list li {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+        .recording {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛒 TouchlessShop - Voice Command Demo</h1>
+        
+        <div class="voice-controls">
+            <button id="startBtn" onclick="startListening()">🎤 Start Listening</button>
+            <button id="stopBtn" onclick="stopListening()" disabled>⏹ Stop Listening</button>
+        </div>
+        
+        <div class="status" id="status">
+            <strong>Status:</strong> Click "Start Listening" to begin voice recognition
+        </div>
+        
+        <div class="command-list">
+            <h3>📋 Available Voice Commands:</h3>
+            <ul>
+                <li>🎤 <strong>"Show shoes"</strong> - Display shoes category</li>
+                <li>🎤 <strong>"Show electronics"</strong> - Display electronics</li>
+                <li>🎤 <strong>"Show clothing"</strong> - Display clothing</li>
+                <li>🎤 <strong>"Next product"</strong> - Move to next product</li>
+                <li>🎤 <strong>"Add to cart"</strong> - Add selected item</li>
+                <li>🎤 <strong>"Checkout"</strong> - Proceed to checkout</li>
+            </ul>
+        </div>
+        
+        <div class="status" id="result">
+            <strong>Last Command:</strong> <span id="commandText">None yet</span>
+        </div>
+    </div>
+
+    <script>
+        let recognition;
+        let isListening = false;
+
+        // Check for browser support
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            
+            recognition.continuous = true;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = function() {
+                isListening = true;
+                document.getElementById('status').innerHTML = 
+                    '<strong>Status:</strong> <span class="recording">🎤 Listening... Speak now!</span>';
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+            };
+
+            recognition.onresult = function(event) {
+                const last = event.results.length - 1;
+                const command = event.results[last][0].transcript;
+                
+                document.getElementById('commandText').textContent = command;
+                document.getElementById('status').innerHTML = 
+                    `<strong>Status:</strong> ✅ Recognized: "${command}"`;
+                
+                // Process command (you can integrate this with your Streamlit app)
+                processCommand(command);
+            };
+
+            recognition.onerror = function(event) {
+                document.getElementById('status').innerHTML = 
+                    `<strong>Status:</strong> ❌ Error: ${event.error}`;
+            };
+
+            recognition.onend = function() {
+                isListening = false;
+                document.getElementById('status').innerHTML = 
+                    '<strong>Status:</strong> ⏹ Stopped listening';
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+            };
+        } else {
+            document.getElementById('status').innerHTML = 
+                '<strong>Status:</strong> ❌ Speech recognition not supported in this browser. Use Chrome or Edge.';
+            document.getElementById('startBtn').disabled = true;
+        }
+
+        function startListening() {
+            if (recognition && !isListening) {
+                recognition.start();
+            }
+        }
+
+        function stopListening() {
+            if (recognition && isListening) {
+                recognition.stop();
+            }
+        }
+
+        function processCommand(command) {
+            const cmd = command.toLowerCase().trim();
+            let action = '';
+            
+            if (cmd.includes('show shoes') || cmd.includes('shoes')) {
+                action = 'Category: Shoes';
+            } else if (cmd.includes('show electronics') || cmd.includes('electronics')) {
+                action = 'Category: Electronics';
+            } else if (cmd.includes('show clothing') || cmd.includes('clothing')) {
+                action = 'Category: Clothing';
+            } else if (cmd.includes('next product') || cmd.includes('next')) {
+                action = 'Next product';
+            } else if (cmd.includes('add to cart') || cmd.includes('add')) {
+                action = 'Add to cart';
+            } else if (cmd.includes('checkout')) {
+                action = 'Checkout';
+            } else {
+                action = 'Unknown command';
+            }
+            
+            // Display action
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<strong>Action:</strong> ${action}`;
+            
+            // In a real implementation, you would send this to your backend
+            console.log('Command:', command, '→ Action:', action);
+        }
+    </script>
+</body>
+</html>
+
