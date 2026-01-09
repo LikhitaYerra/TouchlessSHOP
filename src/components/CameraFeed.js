@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import './CameraFeed.css';
 
 const CameraFeed = ({ onGestureDetected }) => {
@@ -23,7 +23,7 @@ const CameraFeed = ({ onGestureDetected }) => {
   const lastMediaPipeResultsRef = useRef(null);
 
   // Initialize MediaPipe Hands directly (like Python OpenCV approach)
-  const initializeHandDetector = async () => {
+  const initializeHandDetector = useCallback(async () => {
     // Wait for MediaPipe Hands to be ready
     let retries = 0;
     while (retries < 30 && (typeof window.Hands === 'undefined' || !window.mediaPipeHandsReady)) {
@@ -41,8 +41,6 @@ const CameraFeed = ({ onGestureDetected }) => {
       // Suppress WASM console errors temporarily
       const originalConsoleError = console.error;
       const originalConsoleWarn = console.warn;
-      let errorSuppressed = false;
-      let warnSuppressed = false;
       
       try {
         
@@ -54,7 +52,6 @@ const CameraFeed = ({ onGestureDetected }) => {
               message.includes('File exists') ||
               message.includes('Assertion failed')) {
             // Suppress these specific WASM errors - they don't break functionality
-            errorSuppressed = true;
             return;
           }
           originalConsoleError.apply(console, args);
@@ -66,7 +63,6 @@ const CameraFeed = ({ onGestureDetected }) => {
               message.includes('dependency:') ||
               message.includes('Module.arguments')) {
             // Suppress MediaPipe WASM dependency warnings
-            warnSuppressed = true;
             return;
           }
           originalConsoleWarn.apply(console, args);
@@ -174,7 +170,7 @@ const CameraFeed = ({ onGestureDetected }) => {
         reject(new Error(`Could not initialize MediaPipe Hands: ${err.message}`));
       }
     });
-  };
+  }, [onGestureDetected]);
 
   // Initialize Face Landmarks Detection for emotion (optional - skip if not available)
   const initializeFaceDetector = async () => {
@@ -421,7 +417,7 @@ const CameraFeed = ({ onGestureDetected }) => {
   };
 
   // Main detection loop - optimized for performance
-  const detectLoop = async () => {
+  const detectLoop = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) {
       animationFrameRef.current = requestAnimationFrame(detectLoop);
       return;
@@ -538,11 +534,12 @@ const CameraFeed = ({ onGestureDetected }) => {
     }
 
     animationFrameRef.current = requestAnimationFrame(detectLoop);
-  };
+  }, [onGestureDetected]);
 
   useEffect(() => {
     let isMounted = true;
     let stream = null;
+    const video = videoRef.current; // Capture ref value for cleanup
 
     const initializeCamera = async () => {
       try {
@@ -676,16 +673,16 @@ const CameraFeed = ({ onGestureDetected }) => {
         faceDetectorRef.current = null;
       }
 
-      if (videoRef.current && videoRef.current.srcObject) {
-        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
-        videoRef.current.srcObject = null;
+      if (video && video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
       }
 
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
     };
-  }, [onGestureDetected]);
+  }, [onGestureDetected, initializeHandDetector, detectLoop]);
 
   useEffect(() => {
     if (detectedGesture) {
