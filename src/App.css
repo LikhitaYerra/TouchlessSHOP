@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 * {
   margin: 0;
@@ -7,22 +7,55 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
-  background: #0f172a;
+  background: #000000;
   color: #ffffff;
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><circle cx="10" cy="10" r="8" fill="rgba(59,130,246,0.5)"/><circle cx="10" cy="10" r="3" fill="white"/></svg>') 10 10, auto;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(168, 85, 247, 0.15) 0%, transparent 50%);
+  animation: morphBackground 15s ease infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes morphBackground {
+  0%, 100% {
+    filter: hue-rotate(0deg) brightness(1);
+    transform: scale(1) rotate(0deg);
+  }
+  33% {
+    filter: hue-rotate(20deg) brightness(1.2);
+    transform: scale(1.1) rotate(5deg);
+  }
+  66% {
+    filter: hue-rotate(-20deg) brightness(0.9);
+    transform: scale(0.95) rotate(-5deg);
+  }
 }
 
 .App {
   min-height: 100vh;
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background: radial-gradient(ellipse at top, #0f172a 0%, #000000 50%, #0a0118 100%);
   position: relative;
   overflow-x: hidden;
+  perspective: 1500px;
+  transform-style: preserve-3d;
 }
 
-/* Animated background */
 .App::before {
   content: '';
   position: fixed;
@@ -30,23 +63,42 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.08) 0%, transparent 50%);
-  animation: backgroundMove 20s ease infinite;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(59, 130, 246, 0.03) 2px, rgba(59, 130, 246, 0.03) 4px),
+    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(168, 85, 247, 0.03) 2px, rgba(168, 85, 247, 0.03) 4px);
+  animation: gridMove 20s linear infinite;
   pointer-events: none;
   z-index: 0;
 }
 
-@keyframes backgroundMove {
-  0%, 100% { 
-    transform: translate(0, 0) scale(1);
-    opacity: 1;
+@keyframes gridMove {
+  0% {
+    transform: translateY(0) translateX(0);
   }
-  50% { 
-    transform: translate(30px, -30px) scale(1.05);
-    opacity: 0.9;
+  100% {
+    transform: translateY(40px) translateX(40px);
+  }
+}
+
+.App::after {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+  animation: rotateGlow 30s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes rotateGlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -56,6 +108,17 @@ body {
   padding: 2rem;
   position: relative;
   z-index: 1;
+  transform-style: preserve-3d;
+  animation: floatContainer 6s ease-in-out infinite;
+}
+
+@keyframes floatContainer {
+  0%, 100% {
+    transform: translateY(0px) rotateX(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotateX(0.5deg);
+  }
 }
 
 .main-content {
@@ -63,12 +126,28 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
   margin-top: 2rem;
+  transform-style: preserve-3d;
 }
 
 .content-section {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  transform-style: preserve-3d;
+  animation: sectionFloat 8s ease-in-out infinite;
+}
+
+.content-section:nth-child(2) {
+  animation-delay: 1s;
+}
+
+@keyframes sectionFloat {
+  0%, 100% {
+    transform: translateZ(0px) translateY(0px);
+  }
+  50% {
+    transform: translateZ(20px) translateY(-5px);
+  }
 }
 
 .full-width {

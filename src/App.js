@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import CameraFeed from './components/CameraFeed';
 import ProductDisplay from './components/ProductDisplay';
 import ShoppingCart from './components/ShoppingCart';
+import ParticleBackground from './components/ParticleBackground';
+import FloatingOrbs from './components/FloatingOrbs';
 import { PRODUCTS } from './data/products';
 
 function App() {
@@ -92,6 +94,8 @@ function App() {
 
   return (
     <div className="App">
+      <FloatingOrbs />
+      <ParticleBackground />
       <Header />
       <div className="app-container">
         <Sidebar
