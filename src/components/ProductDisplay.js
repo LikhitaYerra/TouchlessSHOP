@@ -1,16 +1,50 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import './ProductDisplay.css';
 import { PRODUCTS } from '../data/products';
+import Scene3D from './Scene3D';
+import { smartExtract } from '../utils/productExtractor';
 
 const ProductDisplay = ({ category, productIndex, onCategorySelect, onProductIndexChange, cart, setCart }) => {
   const product = category ? PRODUCTS[category]?.[productIndex] : null;
+  const [viewMode, setViewMode] = useState('2D'); // '2D' or '3D'
+  const [extractedAttributes, setExtractedAttributes] = useState({ sizes: [], colors: [] });
+  const [isExtracting, setIsExtracting] = useState(false);
 
   const handleAddToCart = () => {
     if (product && !cart.find(item => item.id === product.id)) {
       setCart([...cart, product]);
     }
   };
+
+  // Extract attributes when product changes using LLM
+  useEffect(() => {
+    if (product) {
+      setIsExtracting(true);
+      
+      // Add a small delay to show the extraction animation
+      const timeoutId = setTimeout(() => {
+        smartExtract({ ...product, category })
+          .then(attributes => {
+            setExtractedAttributes(attributes);
+            setIsExtracting(false);
+          })
+          .catch(error => {
+            console.error('LLM extraction error:', error);
+            setIsExtracting(false);
+            // Use existing product data as fallback
+            setExtractedAttributes({
+              sizes: product.sizes || [],
+              colors: product.colors || []
+            });
+          });
+      }, 300); // Small delay for UX
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      setExtractedAttributes({ sizes: [], colors: [] });
+    }
+  }, [product, category]);
 
   const renderStars = (rating) => {
     const stars = [];
@@ -39,25 +73,53 @@ const ProductDisplay = ({ category, productIndex, onCategorySelect, onProductInd
           transition={{ duration: 0.3 }}
           className="product-card-modern"
         >
-          <div className="product-image-container">
-            <img 
-              src={product.image} 
-              alt={product.name}
-              className="product-image-large"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'block';
-              }}
-            />
-            <div className="product-image-fallback" style={{ display: 'none' }}>
-              {product.name.charAt(0)}
-            </div>
-            {product.originalPrice && (
-              <span className="discount-badge">
-                {Math.round((1 - parseFloat(product.price.replace('$', '')) / parseFloat(product.originalPrice.replace('$', ''))) * 100)}% OFF
-              </span>
-            )}
+          {/* View Mode Toggle */}
+          <div className="view-mode-toggle">
+            <button
+              onClick={() => setViewMode('2D')}
+              className={`view-btn ${viewMode === '2D' ? 'active' : ''}`}
+            >
+              📷 2D View
+            </button>
+            <button
+              onClick={() => setViewMode('3D')}
+              className={`view-btn ${viewMode === '3D' ? 'active' : ''}`}
+              disabled={!product.model3D}
+              title={!product.model3D ? '3D model not available for this product' : 'View 3D model'}
+            >
+              🎮 3D View
+            </button>
           </div>
+
+          {/* 2D Image View */}
+          {viewMode === '2D' && (
+            <div className="product-image-container">
+              <img 
+                src={product.image} 
+                alt={product.name}
+                className="product-image-large"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'block';
+                }}
+              />
+              <div className="product-image-fallback" style={{ display: 'none' }}>
+                {product.name.charAt(0)}
+              </div>
+              {product.originalPrice && (
+                <span className="discount-badge">
+                  {Math.round((1 - parseFloat(product.price.replace('$', '')) / parseFloat(product.originalPrice.replace('$', ''))) * 100)}% OFF
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* 3D Model View */}
+          {viewMode === '3D' && (
+            <div className="product-3d-container">
+              <Scene3D product={product} isVisible={true} />
+            </div>
+          )}
           
           <div className="product-details">
             <div className="product-brand">{product.brand}</div>
@@ -80,26 +142,83 @@ const ProductDisplay = ({ category, productIndex, onCategorySelect, onProductInd
             
             <p className="product-description">{product.description}</p>
             
-            {product.sizes && (
+            {(product.sizes || extractedAttributes.sizes.length > 0) && (
               <div className="product-sizes">
-                <label className="size-label">Size:</label>
+                <label className="size-label">
+                  Size: 
+                  {isExtracting && (
+                    <span className="extracting-badge">
+                      <span className="spinner-small"></span> AI Extracting...
+                    </span>
+                  )}
+                  {!isExtracting && (!product.sizes || product.sizes.length === 0) && extractedAttributes.sizes.length > 0 && (
+                    <span className="extracted-badge">✨ AI Extracted</span>
+                  )}
+                </label>
                 <div className="sizes-grid">
-                  {product.sizes.map(size => (
+                  {(product.sizes || extractedAttributes.sizes).map(size => (
                     <button key={size} className="size-button">{size}</button>
                   ))}
                 </div>
               </div>
             )}
             
-            {product.colors && (
+            {(product.colors || extractedAttributes.colors.length > 0) && (
               <div className="product-colors">
-                <label className="color-label">Color:</label>
+                <label className="color-label">
+                  Color:
+                  {isExtracting && (
+                    <span className="extracting-badge">
+                      <span className="spinner-small"></span> AI Extracting...
+                    </span>
+                  )}
+                  {!isExtracting && (!product.colors || product.colors.length === 0) && extractedAttributes.colors.length > 0 && (
+                    <span className="extracted-badge">✨ AI Extracted</span>
+                  )}
+                </label>
                 <div className="colors-grid">
-                  {product.colors.map(color => (
-                    <button key={color} className="color-button" style={{ backgroundColor: color.toLowerCase() }}>
-                      <span className="color-name">{color}</span>
-                    </button>
-                  ))}
+                  {(product.colors || extractedAttributes.colors).map(color => {
+                    // Map color names to hex values
+                    const colorMap = {
+                      'black': '#000000',
+                      'white': '#ffffff',
+                      'blue': '#0000ff',
+                      'red': '#ff0000',
+                      'gray': '#808080',
+                      'grey': '#808080',
+                      'navy': '#000080',
+                      'brown': '#a52a2a',
+                      'green': '#008000',
+                      'yellow': '#ffff00',
+                      'orange': '#ffa500',
+                      'pink': '#ffc0cb',
+                      'purple': '#800080',
+                      'beige': '#f5f5dc',
+                      'tan': '#d2b48c',
+                      'khaki': '#c3b091',
+                      'olive': '#808000',
+                      'maroon': '#800000',
+                      'burgundy': '#800020',
+                      'teal': '#008080',
+                      'cyan': '#00ffff',
+                      'magenta': '#ff00ff'
+                    };
+                    const colorLower = color.toLowerCase();
+                    const bgColor = colorMap[colorLower] || colorLower;
+                    
+                    return (
+                      <button 
+                        key={color} 
+                        className="color-button" 
+                        style={{ 
+                          backgroundColor: bgColor,
+                          border: bgColor === '#ffffff' ? '2px solid #ccc' : 'none'
+                        }}
+                      >
+                        <span className="color-name">{color}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}

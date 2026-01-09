@@ -102,3 +102,7 @@ Card Background: #ffffff (White)
 
 This professional UI design elevates the TouchlessShop demo to a production-ready appearance suitable for academic presentations and real-world demonstrations.
 
+
+
+
+

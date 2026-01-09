@@ -1,22 +1,64 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Environment, Html } from '@react-three/drei';
 import Product3D from './Product3D';
 
 const Scene3D = ({ product, isVisible }) => {
-  if (!product || !isVisible) return null;
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  if (!product || !isVisible) {
+    return (
+      <div className="scene-3d-container">
+        <div className="scene-3d-placeholder">
+          <p>Select a product to view in 3D</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ width: '100%', height: '400px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: '15px', overflow: 'hidden' }}>
+    <div className="scene-3d-container">
       <Canvas
         camera={{ position: [0, 0, 5], fov: 50 }}
-        gl={{ antialias: true, alpha: true }}
+        gl={{ 
+          antialias: true, 
+          alpha: true,
+          powerPreference: "high-performance"
+        }}
+        dpr={[1, 2]}
+        style={{ 
+          width: '100%', 
+          height: '100%',
+          display: 'block'
+        }}
+        onCreated={({ gl, scene }) => {
+          gl.setClearColor('#000000', 0);
+          setIsLoading(false);
+          console.log('3D Canvas created successfully', { gl, scene });
+        }}
+        onError={(error) => {
+          console.error('Canvas error:', error);
+          setError('Failed to initialize 3D view');
+        }}
       >
-        <Suspense fallback={null}>
+        <Suspense fallback={
+          <Html center>
+            <div className="scene-3d-loading">
+              <div className="spinner-3d"></div>
+              <p>Loading 3D View...</p>
+            </div>
+          </Html>
+        }>
           {/* Lighting */}
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[5, 5, 5]} intensity={1} />
-          <pointLight position={[-5, -5, -5]} intensity={0.5} color="#8b5cf6" />
+          <ambientLight intensity={0.6} />
+          <directionalLight position={[5, 5, 5]} intensity={1.2} castShadow />
+          <directionalLight position={[-5, -5, -5]} intensity={0.6} />
+          <pointLight position={[0, 5, 0]} intensity={0.8} color="#667eea" />
+          <pointLight position={[0, -5, 0]} intensity={0.4} color="#f093fb" />
+          
+          {/* Environment for better lighting */}
+          <Environment preset="sunset" />
           
           {/* 3D Product */}
           <Product3D
@@ -31,16 +73,29 @@ const Scene3D = ({ product, isVisible }) => {
             enableZoom={true}
             enablePan={false}
             enableRotate={true}
-            minDistance={3}
-            maxDistance={8}
+            minDistance={2}
+            maxDistance={10}
             autoRotate={true}
             autoRotateSpeed={1}
+            dampingFactor={0.05}
+            enableDamping={true}
           />
         </Suspense>
       </Canvas>
+      {isLoading && (
+        <div className="scene-3d-loading-overlay">
+          <div className="spinner-3d"></div>
+          <p>Initializing 3D View...</p>
+        </div>
+      )}
+      {error && (
+        <div className="scene-3d-error">
+          <p>⚠️ {error}</p>
+          <button onClick={() => { setError(null); setIsLoading(true); }}>Retry</button>
+        </div>
+      )}
     </div>
   );
 };
 
 export default Scene3D;
-

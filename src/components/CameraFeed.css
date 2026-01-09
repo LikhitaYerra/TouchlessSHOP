@@ -174,13 +174,26 @@
   pointer-events: none;
 }
 
-.gesture-indicator {
+.gesture-indicator,
+.emotion-indicator {
   position: absolute;
   top: 1.5rem;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 10;
+  z-index: 100;
   pointer-events: none;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 .gesture-badge {
@@ -199,16 +212,52 @@
 
 @keyframes gesturePop {
   0% {
-    transform: translateX(-50%) scale(0.3) rotate(-180deg);
+    transform: scale(0.3) rotate(-180deg);
     opacity: 0;
   }
   60% {
-    transform: translateX(-50%) scale(1.15) rotate(10deg);
+    transform: scale(1.15) rotate(10deg);
   }
   100% {
-    transform: translateX(-50%) scale(1) rotate(0deg);
+    transform: scale(1) rotate(0deg);
     opacity: 1;
   }
+}
+
+.detection-debug {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 200px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.debug-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.85rem;
+}
+
+.debug-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+}
+
+.debug-value {
+  color: #ffffff;
+  font-weight: 700;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 .motion-indicator {
@@ -328,6 +377,47 @@
   color: rgba(255, 255, 255, 0.7) !important;
   font-weight: 500 !important;
   margin-top: 0.5rem !important;
+}
+
+.detection-debug {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 220px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+}
+
+.debug-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.9rem;
+  padding: 0.3rem 0;
+}
+
+.debug-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+}
+
+.debug-value {
+  color: #ffffff;
+  font-weight: 800;
+  font-family: 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .camera-hint {

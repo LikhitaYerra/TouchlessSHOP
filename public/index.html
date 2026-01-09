@@ -9,13 +9,46 @@
       content="TouchlessShop - Multimodal Voice & Gesture-Based E-Commerce Interface"
     />
     <title>TouchlessShop - Voice & Gesture Shopping</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469404/hands.js" crossorigin="anonymous"></script>
+    <!-- MediaPipe Hands - Using stable version with proper model loading -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1640029074/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils@0.6.1629159509/control_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1620248257/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
+    <script>
+      // Pre-initialize MediaPipe Hands to avoid multiple instances
+      window.mediaPipeHandsReady = false;
+      window.mediaPipeHandsInstance = null;
+      
+      window.addEventListener('load', function() {
+        // Wait a bit for scripts to fully load
+        setTimeout(() => {
+          if (typeof window.Hands !== 'undefined') {
+            window.mediaPipeHandsReady = true;
+            console.log('✅ MediaPipe Hands script loaded');
+          }
+        }, 1000);
+      });
+    </script>
+    <script>
+      // Verify MediaPipe is loading
+      window.addEventListener('load', function() {
+        setTimeout(() => {
+          console.log('=== MediaPipe Loading Check ===');
+          console.log('MediaPipe Hands:', typeof window.Hands);
+          console.log('Camera Utils:', typeof window.Camera);
+          console.log('Drawing Utils:', typeof window.drawConnectors);
+          
+          if (typeof window.Hands !== 'undefined') {
+            console.log('✅ MediaPipe Hands loaded');
+          } else {
+            console.error('❌ MediaPipe Hands NOT loaded');
+          }
+        }, 2000);
+      });
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
   </body>
 </html>
-

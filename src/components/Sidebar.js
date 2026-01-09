@@ -85,8 +85,8 @@ const Sidebar = ({ voiceCommand, lastGesture, processVoiceCommand, isListening, 
           <h2>✋ Hand Gestures</h2>
         </div>
         <div className="command-list">
-          <p><strong>← Swipe Left</strong> - Previous product</p>
-          <p><strong>→ Swipe Right</strong> - Next product</p>
+          <p><strong>👈 Point Left</strong> - Previous product</p>
+          <p><strong>👉 Point Right</strong> - Next product</p>
           <p><strong>✋ Open Palm</strong> - Add to cart</p>
           <p><strong>👍 Thumbs Up</strong> - Like product</p>
         </div>
@@ -145,4 +145,8 @@ const Sidebar = ({ voiceCommand, lastGesture, processVoiceCommand, isListening, 
 };
 
 export default Sidebar;
+
+
+
+
 
